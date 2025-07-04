@@ -234,6 +234,7 @@ export const ELEMENT_IDS = {
   TEST_BTN: 'testBtn',
   TEST_JIRA_BTN: 'testJiraBtn',
   TEST_GITLAB_BTN: 'testGitLabBtn',
+  ENABLE_CONSOLE_TESTS: 'enableConsoleTests',
   THEME_TOGGLE: 'themeToggle',
   GENERATE_SUMMARY_BTN: 'generateSummaryBtn',
   GET_VERSIONS_BTN: 'getVersionsBtn',
@@ -289,6 +290,7 @@ export const STORAGE_KEYS = {
   JIRA_PAT: 'jiraPat',
   GITLAB_BASE_URL: 'gitlabBaseUrl',
   GITLAB_PAT: 'gitlabPat',
+  ENABLE_CONSOLE_TESTS: 'enableConsoleTests',
   THEME_PREFERENCE: 'themePreference'
 };
 

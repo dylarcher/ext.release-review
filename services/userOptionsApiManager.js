@@ -12,7 +12,8 @@ import {
     BUTTON_TEXT,
     ACTIONS,
     STATUS_TYPES,
-    CONSOLE_MESSAGES
+    CONSOLE_MESSAGES,
+    STORAGE_KEYS
 } from '../shared/presetConstants.js';
 
 class SettingsManager {
@@ -21,6 +22,7 @@ class SettingsManager {
         this.setupElementReferences();
         this.setupEventListeners();
         this.loadSavedSettingsIntoForm();
+        this.loadConsoleTestSetting();
     }
 
     initializeI18n() {
@@ -38,6 +40,7 @@ class SettingsManager {
             testBtn: document.getElementById(ELEMENT_IDS.TEST_BTN),
             testJiraBtn: document.getElementById(ELEMENT_IDS.TEST_JIRA_BTN),
             testGitLabBtn: document.getElementById(ELEMENT_IDS.TEST_GITLAB_BTN),
+            enableConsoleTestsCheckbox: document.getElementById(ELEMENT_IDS.ENABLE_CONSOLE_TESTS),
             themeToggle: document.getElementById(ELEMENT_IDS.THEME_TOGGLE)
         };
     }
@@ -57,6 +60,7 @@ class SettingsManager {
         testBtn.addEventListener('click', this.eventHandlers.get('testGeneral'));
         testJiraBtn.addEventListener('click', this.eventHandlers.get('testJira'));
         testGitLabBtn.addEventListener('click', this.eventHandlers.get('testGitLab'));
+        this.elements.enableConsoleTestsCheckbox.addEventListener('change', this.handleSaveConsoleTestSetting.bind(this));
         themeToggle.addEventListener('change', this.eventHandlers.get('themeChange'));
     }
 
@@ -87,7 +91,7 @@ class SettingsManager {
         ];
 
         const validation = validateRequiredFields({
-            jiraBaseUrl, jiraPat, gitlabBaseUrl, gitlabPat
+            jiraBaseUrl, jiraPat, gitlabBaseUrl, gitlabPat // Note: console test setting is not a "required" field for this validation
         });
 
         if (!validation.isValid) {
@@ -97,10 +101,44 @@ class SettingsManager {
 
         try {
             await saveApiConfigurationToStorage(jiraBaseUrl, jiraPat, gitlabBaseUrl, gitlabPat);
+            // Console test setting is saved separately by its own handler, but we can give a general success message here.
             displayStatusWithAutoHide(statusDiv, getMessage(USER_MESSAGES.SETTINGS_SAVED), STATUS_TYPES.SUCCESS);
         } catch (error) {
             displayStatusWithAutoHide(statusDiv, getMessage(USER_MESSAGES.FAILED_TO_SAVE_SETTINGS), STATUS_TYPES.ERROR);
             console.error(CONSOLE_MESSAGES.SAVE_ERROR, error);
+        }
+    }
+
+    async handleSaveConsoleTestSetting() {
+        const { enableConsoleTestsCheckbox, statusDiv } = this.elements;
+        const enabled = enableConsoleTestsCheckbox.checked;
+        try {
+            await chrome.storage.local.set({ [STORAGE_KEYS.ENABLE_CONSOLE_TESTS]: enabled });
+            // Optionally, display a specific message for this change, or rely on the general "Save Settings" button
+            displayStatusWithAutoHide(statusDiv, `Console tests ${enabled ? 'enabled' : 'disabled'}.`, STATUS_TYPES.INFO);
+        } catch (error) {
+            displayStatusWithAutoHide(statusDiv, getMessage(USER_MESSAGES.FAILED_TO_SAVE_SETTINGS), STATUS_TYPES.ERROR);
+            console.error(CONSOLE_MESSAGES.SAVE_ERROR, `Error saving console test setting: ${error}`);
+        }
+    }
+
+    async loadConsoleTestSetting() {
+        const { enableConsoleTestsCheckbox } = this.elements;
+        try {
+            const result = await chrome.storage.local.get(STORAGE_KEYS.ENABLE_CONSOLE_TESTS);
+            enableConsoleTestsCheckbox.checked = !!result[STORAGE_KEYS.ENABLE_CONSOLE_TESTS];
+        } catch (error) {
+            console.error(CONSOLE_MESSAGES.ERROR_LOADING_SETTINGS, `Error loading console test setting: ${error}`);
+        }
+    }
+
+    static async getConsoleTestSetting() {
+        try {
+            const result = await chrome.storage.local.get(STORAGE_KEYS.ENABLE_CONSOLE_TESTS);
+            return !!result[STORAGE_KEYS.ENABLE_CONSOLE_TESTS];
+        } catch (error) {
+            console.error(CONSOLE_MESSAGES.ERROR_LOADING_SETTINGS, `Error retrieving console test setting: ${error}`);
+            return false; // Default to false in case of error
         }
     }
 
@@ -204,3 +242,5 @@ class SettingsManager {
 document.addEventListener('DOMContentLoaded', () => {
     new SettingsManager();
 });
+
+export const getConsoleTestSetting = SettingsManager.getConsoleTestSetting;
