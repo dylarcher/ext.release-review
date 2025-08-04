@@ -7,7 +7,7 @@
   "bugs": "https://github.com/dylarcher/release-diff/issues",
   "description": "A browser extension to compare release tickets from Jira against commits from GitLab.",
   "devDependencies": {
-    "@types/node": "24.0.x",
+    "@types/node": "24.2.x",
     "c8": "10.1.x",
     "prettier": "3.x",
     "editorconfig-checker": "6.x",
