@@ -12,7 +12,7 @@
     "prettier": "3.x",
     "editorconfig-checker": "6.x",
     "monocart-coverage-reports": "2.12.x",
-    "typescript": "5.8.x",
+    "typescript": "5.9.x",
     "rimraf": "6.0.1"
   },
   "displayName": "Release Stories vs Commits",
